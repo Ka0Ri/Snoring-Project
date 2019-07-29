@@ -124,19 +124,19 @@ def stas_feature4(data, spr):
     yf = fft(data)
     yf = yf[:l//2]
     energy = 1/(l)*np.abs(yf)
+    energy_scale = energy/scaling_factor
+    # energy_scale = np.log(energy + 1)
+    energy_scale = energy_scale - np.min(energy_scale)
     #feature
     r0 = 50*l//spr
-    r1 = 300*l//spr
+    r1 = 200*l//spr
+    r2 = 400*l//spr
     r3 = 800*l//spr
-     
-    mean = np.mean(energy)
-    sd = np.std(energy)
-    mean1 = np.mean(energy[r0:r1])/mean
-    sd1 = np.std(energy[r0:r1])/sd
-    mean2 = np.mean(energy[r1:r3])/mean
-    sd2 = np.std(energy[r1:r3])/sd
-    skew = stats.skew(energy[r0:r3])
-    return [mean1, mean2, sd1, sd2, skew]
+    
+    mean1 = np.mean(energy_scale[r0:r1])
+    mean2 = np.mean(energy_scale[r1:r2])
+    mean3 = np.mean(energy_scale[r2:r3])
+    return [mean1, mean2, mean3]
 
 def create_filter_banks(n_filters, spr, l):
     #create filter banks
@@ -183,47 +183,41 @@ def feature_extract(data, spr):
         # ma = 1.0*np.max(sig)
         # sig = (2*sig - (ma + mi))/(ma - mi)
         sig = sig * hw
-        fea = stas_feature2(sig, spr)
+        fea = stas_feature4(sig, spr)
         feature_vectors.append(fea)
     return feature_vectors   
 
+def scaling(path):
+    snoring = np.load(path)
+    data = np.concatenate([snoring[0], snoring[1], snoring[2], snoring[3], 
+                        snoring[4], snoring[5], snoring[6], snoring[7]])
+    l = data.shape[0]
+    yf = fft(data)
+    yf = yf[:l//2]
+    energy = 1/(l)*np.abs(yf)
+    return np.mean(energy)
+
 #############################################################
 #load data
-snoring = np.load(path + '/numerical_data/snoring_new.wav.npy')
-n_snoring_sample = snoring.shape[0]
-print(n_snoring_sample)
-t1 = time.time()
-snoring_fea_vecs = feature_extract(snoring, sampling_rate)
-np.save(path + '/feature/snoring_new_6mean', np.array(snoring_fea_vecs))
-t2 = time.time()
-print("feature extraction", (t2 -t1)/(n_snoring_sample))
-
+scaling_factor = scaling(path + '/numerical_data/none_snoring_new.wav.npy')
+print(scaling_factor)
 snoring = np.load(path + '/numerical_data/none_snoring_new.wav.npy')
 n_snoring_sample = snoring.shape[0]
 print(n_snoring_sample)
 t1 = time.time()
 snoring_fea_vecs = feature_extract(snoring, sampling_rate)
-np.save(path + '/feature/none_snoring_new_6mean', np.array(snoring_fea_vecs))
+np.save(path + '/feature/none_snoring_new_scale1', np.array(snoring_fea_vecs))
 t2 = time.time()
 print("feature extraction", (t2 -t1)/(n_snoring_sample))
 
-# snoring = np.load(path + '/numerical_data/snoring101.wav.npy')
-# n_snoring_sample = snoring.shape[0]
-# print(n_snoring_sample)
-# t1 = time.time()
-# snoring_fea_vecs = feature_extract(snoring, sampling_rate)
-# np.save(path + '/feature/snoring_101_4mean', np.array(snoring_fea_vecs))
-# t2 = time.time()
-# print("feature extraction", (t2 -t1)/(n_snoring_sample))
-
-# snoring = np.load(path + '/numerical_data/none_snoring101.wav.npy')
-# n_snoring_sample = snoring.shape[0]
-# print(n_snoring_sample)
-# t1 = time.time()
-# snoring_fea_vecs = feature_extract(snoring, sampling_rate)
-# np.save(path + '/feature/none_snoring_101_4mean', np.array(snoring_fea_vecs))
-# t2 = time.time()
-# print("feature extraction", (t2 -t1)/(n_snoring_sample))
+snoring = np.load(path + '/numerical_data/snoring_new.wav.npy')
+n_snoring_sample = snoring.shape[0]
+print(n_snoring_sample)
+t1 = time.time()
+snoring_fea_vecs = feature_extract(snoring, sampling_rate)
+np.save(path + '/feature/snoring_new_scale1', np.array(snoring_fea_vecs))
+t2 = time.time()
+print("feature extraction", (t2 -t1)/(n_snoring_sample))
 
 
 

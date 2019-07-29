@@ -1,6 +1,6 @@
 import sys
 import os
-from PyQt5.QtWidgets import QWidget ,QPushButton, QLabel, QLineEdit, QApplication, QGridLayout, QFileDialog, QSlider, QAction, QMainWindow
+from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
 from PyQt5 import QtTest
 import numpy as np

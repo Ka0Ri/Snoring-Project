@@ -76,7 +76,7 @@ def concatdata(path):
 
 path = os.path.dirname(os.getcwd())
 sampling_rate = 4000
-s = framing("none_snoring_new.wav", sampling_rate, 128)
+s = framing("noise_snoring.wav", sampling_rate, 128)
 print(s)
 # concatdata(path + "/using_data/")
 ##################################################################

@@ -21,7 +21,7 @@ def train(snoring_path, no_snoring_path):
     i = 0
     s1 = s2 = 0
     iters = 20
-    settings = "new-new-1"
+    settings = "new-new-5"
     while(i < iters):
         print(i)
         snoring_fea_vecs = np.load(path + snoring_path)
@@ -41,9 +41,9 @@ def train(snoring_path, no_snoring_path):
         # pickle.dump(clf, open(path + "/model/" + settings + "/model_SVM_linear.w",'wb')) 
 
         #SVM rbf
-        clf = svm.SVC(C=100, kernel='rbf', gamma='scale')
-        clf.fit(X,Y)
-        pickle.dump(clf, open(path + "/model/" + settings + "/model_SVM_rbf.w",'wb'))
+        # clf = svm.SVC(C=100, kernel='rbf', gamma='scale')
+        # clf.fit(X,Y)
+        # pickle.dump(clf, open(path + "/model/" + settings + "/model_SVM_rbf.w",'wb'))
 
         
         #SVM poly
@@ -62,16 +62,16 @@ def train(snoring_path, no_snoring_path):
         # pickle.dump(clf, open(path + "/model/" + settings + "/model_LR.w",'wb'))
 
         #tree
-        # clf = DecisionTreeClassifier()
-        # clf.fit(X, Y)
-        # pickle.dump(clf, open(path + "/model/" + settings + "/model_DT.w",'wb'))
+        clf = DecisionTreeClassifier()
+        clf.fit(X, Y)
+        pickle.dump(clf, open(path + "/model/" + settings + "/model_DT.w",'wb'))
 
-        #LDA
+        # LDA
         # clf = LinearDiscriminantAnalysis()
         # clf.fit(X, Y)
         # pickle.dump(clf, open(path + "/model/" + settings + "/model_LDA.w",'wb'))
 
-        #GMM
+        # GMM
         # clf = GaussianMixture(n_components=2)
         # clf.fit(X)
         # pickle.dump(clf, open(path + "/model/" + settings + "/model_GMM.w",'wb'))
@@ -81,7 +81,7 @@ def train(snoring_path, no_snoring_path):
 
 
         t1 = time.time()
-        m = 13000
+        m = 10000
         r1 = np.sum(1-clf.predict(snoring_fea_vecs[n:n+m]))/(m)
         if(r1 < 0.5):
             r1 = 1 - r1
@@ -99,22 +99,20 @@ def train(snoring_path, no_snoring_path):
 def cross_test(model_name, snoring_path, no_snoring_path):
     #load model
     model = pickle.load(open(path + model_name, 'rb'))
-    snoring_fea_vecs = np.load(path + snoring_path)
+    snoring_fea_vecs = np.load(path + snoring_path) - 2
     n1 = snoring_fea_vecs.shape[0]
-    no_snoring_fea_vecs = np.load(path + no_snoring_path)
+    no_snoring_fea_vecs = np.load(path + no_snoring_path) - 2
     n2 = no_snoring_fea_vecs.shape[0]
 
     r1 = np.sum(1 - model.predict(snoring_fea_vecs))/n1
     r2 = np.sum(model.predict(no_snoring_fea_vecs))/n2
-    # print(snoring_fea_vecs[:50])
-    # print(no_snoring_fea_vecs[:50])
     print(r1, r2)
 
-train('/feature/snoring_new_6mean_n.npy', '/feature/none_snoring_new_6mean_n.npy')
-# cross_test("/model/old-old-1/model_DT.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
-# cross_test("/model/old-old-1/model_SVM_rbf.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
-# cross_test("/model/old-old-1/model_NB.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
-# cross_test("/model/old-old-1/model_LR.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
-# cross_test("/model/old-old-1/model_LDA.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
-# cross_test("/model/old-old-1/model_GMM.w" ,'/feature/snoring_100_6mean_n.npy', '/feature/none_snoring_100_6mean_n.npy')
+# train('/feature/snoring_new_scale1.npy', '/feature/none_snoring_new_scale1.npy')
+cross_test("/model/101-101-2/model_DT.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
+cross_test("/model/101-101-2/model_SVM_rbf.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
+cross_test("/model/101-101-2/model_NB.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
+cross_test("/model/101-101-2/model_LR.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
+cross_test("/model/101-101-2/model_LDA.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
+cross_test("/model/101-101-2/model_GMM.w" ,'/feature/noise_snoring_6mean.npy', '/feature/noise_none_snoring_6mean.npy')
 
