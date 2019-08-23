@@ -1,0 +1,7 @@
+numpy
+scipy
+pickle
+wave
+struct
+sounddevice
+sklearn

@@ -1,0 +1,31 @@
+def run_test(sig, spr, n_sample):
+    sum_pre = []
+    for i in np.arange(1/2, sig.shape[0], 1/2):
+        s = int(n_sample*(i - 1/2))
+        e = int(n_sample*(i + 1/2))
+        if(e > sig.shape[0]):
+            break
+        data = sig[s:e]
+        fea_vec = stas_feature4(data, spr)
+        pre = model.predict([fea_vec])[0]
+        sum_pre.append(pre)
+    
+    print(sum_pre)
+    longest_len = 0
+    i = 0
+    while(i < len(sum_pre)):
+        if(sum_pre[i] == 0):
+            len_ = 1
+            j = i + 1
+            while(j < len(sum_pre) and sum_pre[j] == 0):
+                len_ = len_ + 1
+                j = j + 1
+            if(len_ > longest_len):
+                longest_len = len_
+            i = j + 1
+        else:
+            i = i + 1
+    
+    if(longest_len > 7):
+        return True
+    return False
