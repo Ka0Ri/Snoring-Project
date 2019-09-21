@@ -1,0 +1,9 @@
+pip
+numpy
+scipy
+pyaudio
+sounddevice
+sklearn
+sudo apt-get install python-dev libatlas-base-dev
+sudo apt-get install libportaudio0 libportaudio2 libportaudiocpp0 portaudio19-dev
+RPi.GPIO
