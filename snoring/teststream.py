@@ -18,12 +18,11 @@ GPIO.setmode(GPIO.BCM)
 GPIO.setwarnings(False)
 GPIO.setup(18,GPIO.OUT)
 
-flash_LED(1)
+flash_LED(2)
 audio = pyaudio.PyAudio()
-time.sleep(1)
-flash_LED(1)
-stream = audio.open(format = form_1,rate = samp_rate,channels = chans, \
-                    input_device_index = dev_index,input = True, \
+time.sleep(2)
+flash_LED(2)
+stream = audio.open(format = form_1,rate = samp_rate,channels = chans,input = True, \
                     frames_per_buffer=chunk)
 time.sleep(1)
 flash_LED(1)

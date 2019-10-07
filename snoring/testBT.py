@@ -21,12 +21,12 @@ def check_and_turn_on_BT(MAC_address):
     while(isignal != 1):
     #connect mic
         subprocess.call('/home/pi/snoring/autodis', shell=True)
-        time.sleep(3)
+        time.sleep(4)
         subprocess.call('sudo killall bluealsa', shell=True)
         subprocess.call('pulseaudio --start', shell=True)
         time.sleep(1)
         subprocess.call('/home/pi/snoring/autopair', shell=True)
-        time.sleep(3)
+        time.sleep(4)
         string = "set-card-profile bluez_card." + MAC_address
         check = subprocess.check_output(["pacmd", string, "headset_head_unit"])
         if(check != b''):

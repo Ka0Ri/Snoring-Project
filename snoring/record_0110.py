@@ -4,13 +4,14 @@ import wave, struct
 from utls import *
 from scipy.signal import resample_poly
 import sys
+
 import time
 import subprocess
 import RPi.GPIO as GPIO
 
 flash_LED(1, 4)
-send_signal_TX("00000010\n")
 time.sleep(1)
+
 
 form_1 = pyaudio.paInt16 # 16-bit resolution
 chans = 1 # 1 channel
@@ -42,21 +43,17 @@ def start_stream(record_secs=100, threshold=5):
             predict_snoring = run_test2(sig, sampling_rate, n_sample, scaling_factor)
             print("snoring at ",ii,"-th second: ", predict_snoring)
             snoring.append(predict_snoring)
-            if(predict_snoring == True):
-                send_signal_TX("11111111\n") 
-            else:
-                send_signal_TX("00000000\n")
             if(ii >= 30):
                 total = np.sum(snoring)
                 print("The number of seconds snoring occured ", total)
                 if(ii % 5 == 0):
                     if(total > threshold):
                         log.append(1)
-                        #print("snore!!!!")
+                        print("snore!!!!")
                         GPIO.output(21, GPIO.HIGH)
-                    else:                        
+                    else:
                         log.append(0)
-                        #print("zzzzzz")
+                        print("zzzzzz")
                         GPIO.output(21, GPIO.LOW)
                 snoring.pop(0)
 
@@ -71,7 +68,6 @@ def start_stream(record_secs=100, threshold=5):
         time.sleep(0.2)
     GPIO.output(4, GPIO.LOW)
     GPIO.output(21, GPIO.LOW)
-    send_signal_TX("00000101\n")
 
 if __name__ == "__main__":
     check_and_turn_on_BT(sys.argv[1])
