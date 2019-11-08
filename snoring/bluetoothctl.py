@@ -139,7 +139,7 @@ class Bluetoothctl:
     def pair(self, mac_address):
         """Try to pair with a device by mac address."""
         try:
-            out = self.get_output("pair " + mac_address, 4)
+            out = self.get_output("pair " + mac_address, 2)
         except BluetoothctlError as e:
             print(e)
             return None
@@ -151,7 +151,7 @@ class Bluetoothctl:
     def remove(self, mac_address):
         """Remove paired device by mac address, return success of the operation."""
         try:
-            out = self.get_output("remove " + mac_address, 3)
+            out = self.get_output("remove " + mac_address, 2)
         except BluetoothctlError as e:
             print(e)
             return None

@@ -21,6 +21,7 @@ n_sample = 128*sampling_rate//1000
 #############################################################
 
 import serial
+from serial import SerialException
 port = "/dev/serial0"
 #port = "/dev/ttyUSB0"
 baud = 115200
@@ -38,9 +39,8 @@ def send_signal_TX(mess):
     try:
         ser.open()
         x = ser.write(mess.encode('UTF-8'))
-        #time.sleep(0.1)
-        #print(mess)
-    except (OSError, serial.serialutil.SerialException):
+        time.sleep(0.1)
+    except SerialException:
         ser.close()
         pass
     ser.close()
@@ -69,7 +69,7 @@ def find_longest_len(sum_pre):
     
     return longest_len
 
-def stas_feature4(data, spr, scaling_factor):
+def stas_feature(data, scaling_factor):
     l = data.shape[0]
     #fft
     hw = np.hamming(l)
@@ -81,18 +81,17 @@ def stas_feature4(data, spr, scaling_factor):
     #energy_scale = np.log(energy)
     energy_scale = energy_scale - np.min(energy_scale)
     #feature
-    r0 = 50*l//spr
-    r1 = 250*l//spr
-    r2 = 500*l//spr
-    r3 = 800*l//spr
+    r0 = 50*l//sampling_rate
+    r1 = 250*l//sampling_rate
+    r2 = 500*l//sampling_rate
+    r3 = 800*l//sampling_rate
     
     mean1 = np.mean(energy_scale[r0:r1])
     mean2 = np.mean(energy_scale[r1:r2])
     mean3 = np.mean(energy_scale[r2:r3])
-    print(mean1)
     return [mean1, mean2, mean3]
 
-def run_test(sig, spr, n_sample, scaling_factor):
+def snore1second(sig, params_dict):
     sum_pre = []
     for i in np.arange(1/2, sig.shape[0], 1/2):
         s = int(n_sample*(i - 1/2))
@@ -100,22 +99,15 @@ def run_test(sig, spr, n_sample, scaling_factor):
         if(e > sig.shape[0]):
             break
         data = sig[s:e]
-        fea_vec = stas_feature4(data, spr, scaling_factor)
+        fea_vec = stas_feature4(data, params_dict["SCALE"])
         pre = 1 - model.predict([fea_vec])[0]
         sum_pre.append(pre)
     
     longest_len = find_longest_len(sum_pre)
     
-    if(longest_len > 3):
+    if(longest_len > params_dict["SNORE_PER_1SECOND"]):
         return True
     return False
-
-def scaling(data):
-    l = data.shape[0]
-    yf = fft(data)
-    yf = yf[:l//2]
-    energy = 1/(l)*np.abs(yf)
-    return np.mean(energy)
 
 def check_and_turn_on_BT(MAC_address):
     MAC_add_bl = MAC_address.replace('_',':')
@@ -129,7 +121,7 @@ def check_and_turn_on_BT(MAC_address):
     while(isignal != 1):
     #connect mic
         try:
-            send_signal_TX("00000011\n")
+            #send_signal_TX("00000011\n")
             bl.disconnect(MAC_add_bl)
             print("disconnect")
             time.sleep(3)
@@ -161,10 +153,10 @@ def check_and_turn_on_BT(MAC_address):
         flash_LED(0.2, 4)
         time.sleep(0.2)
     GPIO.output(4, GPIO.HIGH)
-    send_signal_TX("00000100\n")
+    #send_signal_TX("00000100\n")
             
 
-def fea(data, spr):
+def fea(data):
     l = data.shape[0]
     #fft
     hw = np.hamming(l)
@@ -174,16 +166,15 @@ def fea(data, spr):
     energy = 1/(l)*np.abs(yf)
     energy = energy - np.min(energy)
     #feature
-    r0 = 50*l//spr
-    r1 = 250*l//spr
-    r2 = 500*l//spr
-    r3 = 800*l//spr
+    r0 = 50*l//sampling_rate
+    r1 = 250*l//sampling_rate
+    r2 = 500*l//sampling_rate
+    r3 = 800*l//sampling_rate
      
     mean = np.mean(energy[r0:r2])
     return mean
 
-def run_test2(sig, spr, n_sample, scaling_factor):
-    scaling_factor = 12
+def snore_1_second(sig, params_dict):
     sum_pre = []
     for i in np.arange(1/2, sig.shape[0], 1/2):
         s = int(n_sample*(i - 1/2))
@@ -191,20 +182,20 @@ def run_test2(sig, spr, n_sample, scaling_factor):
         if(e > sig.shape[0]):
             break
         data = sig[s:e]
-        mean = fea(data, sampling_rate)
-        #print(mean)
-        if(mean > 4*scaling_factor):
-           sum_pre.append(0)
+        mean = fea(data)
+
+        if(mean > 4*params_dict["SCALE"]):
+            sum_pre.append(0)
         else:
             sum_pre.append(1)
             
     longest_len = find_longest_len(sum_pre)
     
-    if(longest_len > 8):
+    if(longest_len > params_dict["SNORE_PER_1SECOND"]):
         return True
     return False
 
-def scaling2(sig):
+def scaling(sig):
     log = []
     for i in np.arange(1/2, sig.shape[0], 1/2):
         s = int(n_sample*(i - 1/2))
@@ -215,3 +206,18 @@ def scaling2(sig):
         mean = fea(data, sampling_rate)
         log.append(mean)
     return np.mean(np.array(log))
+
+def read_params():
+    params_dict = {}
+    try:
+        with open("params.txt") as fp:
+            for cnt, line in enumerate(fp):
+                key, value = line.split(':')
+                value = value[:-1].strip()
+                if(value.isdigit()):
+                    value = int(value)
+                params_dict[key] = value
+    finally:
+        fp.close()
+    return params_dict
+
